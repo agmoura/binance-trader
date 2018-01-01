@@ -1,5 +1,6 @@
 package io.github.unterstein;
 
+import com.binance.api.client.BinanceApiRestClient;
 import com.binance.api.client.domain.OrderStatus;
 import com.binance.api.client.domain.account.AssetBalance;
 import com.binance.api.client.domain.account.Order;
@@ -12,43 +13,44 @@ import java.util.List;
 
 public class BinanceTrader {
 
-  private static Logger logger = LoggerFactory.getLogger(BinanceTrader.class);
+    private static Logger logger = LoggerFactory.getLogger(BinanceTrader.class);
 
-  private TradingClient client;
-  private final double tradeDifference;
-  private final double tradeProfit;
-  private final int tradeAmount;
+    private TradingClient client;
+    private final String tradeCurrency;
+    private final double tradeDifference;
+    private final double tradeProfit;
+    private final double tradeAmount;
 
-  private Double currentlyBoughtPrice;
-  private Long orderId;
-  private int panicBuyCounter;
-  private int panicSellCounter;
-  private double trackingLastPrice;
+    private Double currentlyBoughtPrice;
+    private Long orderId;
+    private int panicBuyCounter;
+    private int panicSellCounter;
+    private double trackingLastPrice;
 
-  BinanceTrader(double tradeDifference, double tradeProfit, int tradeAmount, String baseCurrency, String tradeCurrency, String key, String secret) {
-    client = new TradingClient(baseCurrency, tradeCurrency, key, secret);
-    trackingLastPrice = client.lastPrice();
-    this.tradeAmount = tradeAmount;
-    this.tradeProfit = tradeProfit;
-    this.tradeDifference = tradeDifference;
-    clear();
-  }
+    BinanceTrader(BinanceApiRestClient restClient, double tradeDifference, double tradeProfit, double tradeAmount, String baseCurrency, String tradeCurrency) {
+        client = new TradingClient(restClient, baseCurrency, tradeCurrency);
+        trackingLastPrice = client.lastPrice();
+        this.tradeAmount = tradeAmount;
+        this.tradeProfit = tradeProfit;
+        this.tradeDifference = tradeDifference;
+        this.tradeCurrency = tradeCurrency;
+        clear();
+    }
 
-  void tick() {
-    double lastPrice = 0;
-    try {
-      OrderBook orderBook = client.getOrderBook();
-      lastPrice = client.lastPrice();
-      AssetBalance tradingBalance = client.getTradingBalance();
-      double lastKnownTradingBalance = client.getAllTradingBalance();
-      double lastBid = Double.valueOf(orderBook.getBids().get(0).getPrice());
-      double lastAsk = Double.valueOf(orderBook.getAsks().get(0).getPrice());
-      double buyPrice = lastBid + tradeDifference;
-      double sellPrice = lastAsk - tradeDifference;
-      double profitablePrice = buyPrice + (buyPrice * tradeProfit / 100);
+    void tick() {
+        double lastPrice = 0;
+        try {
+            OrderBook orderBook = client.getOrderBook();
+            lastPrice = client.lastPrice();
+            AssetBalance tradingBalance = client.getTradingBalance();
+            double lastKnownTradingBalance = client.getAllTradingBalance();
+            double lastBid = Double.valueOf(orderBook.getBids().get(0).getPrice()); // last buy price (bid)
+            double lastAsk = Double.valueOf(orderBook.getAsks().get(0).getPrice()); // last sell price (ask)
+            double buyPrice = lastBid + tradeDifference;
+            double sellPrice = lastAsk - tradeDifference;
+            double profitablePrice = buyPrice + (buyPrice * tradeProfit / 100);
 
-
-      logger.info(String.format("buyPrice:%.8f sellPrice:%.8f bid:%.8f ask:%.8f price:%.8f profit:%.8f diff:%.8f\n", buyPrice, sellPrice, lastAsk, lastAsk, lastPrice, profitablePrice, (lastAsk - profitablePrice)));
+            logger.info(String.format("%s: buyPrice:%.8f sellPrice:%.8f bid:%.8f ask:%.8f price:%.8f profit:%.8f diff:%.8f\n", tradeCurrency, buyPrice, sellPrice, lastAsk, lastAsk, lastPrice, profitablePrice, (lastAsk - profitablePrice)));
 
       if (orderId == null) {
         logger.info("nothing bought, let`s check");
