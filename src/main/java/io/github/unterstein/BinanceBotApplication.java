@@ -60,9 +60,11 @@ public class BinanceBotApplication {
         //traders.add(new BinanceTrader(client, tradeDifference, tradeProfit, 21, baseCurrency, "ADA"));
         traders.add(new BinanceTrader(client, tradeDifference, tradeProfit, 2, baseCurrency, "BNB"));
         traders.add(new BinanceTrader(client, tradeDifference, tradeProfit, 8, baseCurrency, "XRP"));
-        traders.add(new BinanceTrader(client, tradeDifference, tradeProfit, 326, baseCurrency, "TRX"));
+        //traders.add(new BinanceTrader(client, tradeDifference, tradeProfit, 326, baseCurrency, "TRX"));
         traders.add(new BinanceTrader(client, tradeDifference, tradeProfit, 32, baseCurrency, "XLM"));
         traders.add(new BinanceTrader(client, tradeDifference, tradeProfit, 0.021, baseCurrency, "ETH"));
+        traders.add(new BinanceTrader(client, tradeDifference, tradeProfit, 0.021, baseCurrency, "ARN"));
+        traders.add(new BinanceTrader(client, tradeDifference, tradeProfit, 2, baseCurrency, "BNB"));
     }
 
     // tick every 3 seconds
@@ -73,10 +75,10 @@ public class BinanceBotApplication {
         }
     }
 
-  @RequestMapping("/")
+  /*@RequestMapping("/")
   public List<AssetBalance> getBalances() {
     return trader.getBalances().stream().filter(assetBalance -> !assetBalance.getFree().startsWith("0.0000")).collect(Collectors.toList());
-  }
+  }*/
 
   public static void main(String[] args) {
     SpringApplication.run(BinanceBotApplication.class);
